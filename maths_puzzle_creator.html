@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maths Puzzle Creator (10 in 1)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #1a2a6c;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+        .input-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f0f4ff;
+            border-radius: 12px;
+            border: 2px solid #d0d8ff;
+        }
+        .input-section label {
+            font-weight: 600;
+            color: #1a2a6c;
+            font-size: 1.1rem;
+        }
+        #answerInput {
+            padding: 12px 16px;
+            font-size: 1.2rem;
+            border: 2px solid #1a2a6c;
+            border-radius: 8px;
+            width: 180px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        #answerInput:focus {
+            border-color: #b21f1f;
+            box-shadow: 0 0 0 3px rgba(178, 31, 31, 0.2);
+        }
+        .btn {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn-go {
+            background: linear-gradient(135deg, #1a2a6c, #2a4a9c);
+            color: white;
+        }
+        .btn-go:hover {
+            background: linear-gradient(135deg, #2a4a9c, #1a2a6c);
+        }
+        .btn-copy {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        .btn-exit {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+        .questions-section {
+            display: none;
+            margin-top: 10px;
+        }
+        .questions-section.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .questions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .questions-header h2 {
+            color: #1a2a6c;
+            font-size: 1.3rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        #questionsList {
+            list-style: none;
+            counter-reset: question-counter;
+        }
+        #questionsList li {
+            background: #fff;
+            border: 1px solid #e0e6ff;
+            border-left: 5px solid #1a2a6c;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+            line-height: 1.5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            counter-increment: question-counter;
+            position: relative;
+            padding-left: 50px;
+        }
+        #questionsList li::before {
+            content: counter(question-counter);
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #1a2a6c;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .error-msg {
+            color: #dc3545;
+            text-align: center;
+            font-weight: 600;
+            margin: 10px 0;
+            display: none;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px 15px;
+            }
+            h1 {
+                font-size: 1.4rem;
+            }
+            #answerInput {
+                width: 140px;
+            }
+            .btn {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Maths Puzzle Creator</h1>
+        <p class="subtitle">(10 in 1) — Reasoning-Based Number Puzzles</p>
+
+        <div class="input-section">
+            <label for="answerInput">Answer:</label>
+            <input type="text" id="answerInput" placeholder="Enter any number" inputmode="numeric" autocomplete="off">
+            <button class="btn btn-go" id="goBtn">Go</button>
+        </div>
+
+        <p class="error-msg" id="errorMsg">Please enter a valid non-negative integer.</p>
+
+        <div class="questions-section" id="questionsSection">
+            <div class="questions-header">
+                <h2>Your 10 Puzzles</h2>
+                <div class="action-buttons">
+                    <button class="btn btn-copy" id="copyBtn">Copy All</button>
+                    <button class="btn btn-exit" id="exitBtn">Exit</button>
+                </div>
+            </div>
+            <ol id="questionsList"></ol>
+        </div>
+
+        <div class="footer">
+            Designed and Developed by 100, 000 000 000
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script>
+        const answerInput = document.getElementById('answerInput');
+        const goBtn = document.getElementById('goBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        const questionsSection = document.getElementById('questionsSection');
+        const questionsList = document.getElementById('questionsList');
+        const copyBtn = document.getElementById('copyBtn');
+        const exitBtn = document.getElementById('exitBtn');
+        const toast = document.getElementById('toast');
+
+        // Store the latest generated questions so Copy All never reads from the DOM
+        let currentQuestions = [];
+        let currentAnswer = '';
+
+        function isValidNumber(str) {
+            if (str.trim() === '') return false;
+            // Allow only non-negative integers (including 0)
+            return /^\d+$/.test(str.trim());
+        }
+
+        function generateQuestions(n) {
+            const s = String(n);
+            const digits = s.split('').map(Number);
+            const len = digits.length;
+            const evenOdd = (n % 2 === 0) ? 'even' : 'odd';
+            const ds = digits.reduce((a, b) => a + b, 0);
+            const dig = (pos) => digits[pos - 1];           // 1-based from left
+            const product = digits.reduce((a, b) => a * b, 1);
+            const questions = [];
+
+            // 1. Division with quotient & remainder (reasoning + calculation)
+            const quot = Math.floor(n / 3);
+            const rem = n % 3;
+            questions.push(`When a certain number is divided by 3, the quotient is ${quot} and the remainder is ${rem}. What is the number?`);
+
+            // 2. Place-value reasoning
+            if (len >= 3) {
+                questions.push(`The place value of my first digit is ${dig(1) * Math.pow(10, len - 1)}, the place value of my second digit is ${dig(2) * Math.pow(10, len - 2)}, and so on. Adding all these place values gives me back. I have ${len} digits. Which number am I?`);
+            } else if (len === 2) {
+                questions.push(`The place value of my tens digit is ${dig(1) * 10} and the place value of my units digit is ${dig(2)}. Their sum is me. Which number am I?`);
+            } else {
+                questions.push(`I am a single-digit ${evenOdd} number. My place value equals the number itself. Which number am I?`);
+            }
+
+            // 3. Digit sum combined with odd/even
+            questions.push(`I am an ${evenOdd} number and the sum of all my digits equals ${ds}. Which number am I?`);
+
+            // 4. First & last digit relation
+            if (len >= 2) {
+                const sumFL = dig(1) + dig(len);
+                const diffFL = Math.abs(dig(1) - dig(len));
+                questions.push(`The sum of my first and last digits is ${sumFL} and the absolute difference between them is ${diffFL}. I contain ${len} digits. Which number am I?`);
+            } else {
+                questions.push(`The sum of my digits is the same as the number itself. Which number am I?`);
+            }
+
+            // 5. Product of digits
+            if (product === 0) {
+                questions.push(`Because at least one of my digits is zero, the product of all my digits is 0. I have ${len} digits. Which number am I?`);
+            } else {
+                questions.push(`The product of all my digits is ${product}. I have ${len} digits. Which number am I?`);
+            }
+
+            // 6. Specific positional digit relation (add / subtract / compare)
+            if (len >= 3) {
+                const d1 = dig(1), d2 = dig(2), d3 = dig(3);
+                if (d1 + d2 === d3) {
+                    questions.push(`Adding my first digit to my second digit gives exactly my third digit. Which number am I?`);
+                } else if (d3 - d2 === d1) {
+                    questions.push(`Subtracting my second digit from my third digit produces my first digit. Which number am I?`);
+                } else if (d2 - d1 === d3) {
+                    questions.push(`Subtracting my first digit from my second digit produces my third digit. Which number am I?`);
+                } else {
+                    questions.push(`My second digit is ${d2}. The sum of my first and third digits equals ${d1 + d3}. Which number am I?`);
+                }
+            } else if (len === 2) {
+                questions.push(`Multiplying my first digit by my second digit gives ${dig(1) * dig(2)}. Which number am I?`);
+            } else {
+                questions.push(`Multiplying me by any number and then dividing by the same number returns me. Which number am I?`);
+            }
+
+            // 7. Digit reversal logic
+            if (len >= 2) {
+                const reversed = parseInt(s.split('').reverse().join(''), 10);
+                if (reversed === n) {
+                    questions.push(`I am a palindrome: reading my digits from left to right or right to left gives the same number. I have ${len} digits. Which number am I?`);
+                } else {
+                    questions.push(`If all my digits are reversed, the new number obtained is ${reversed}. What was the original number?`);
+                }
+            } else {
+                questions.push(`Reversing my single digit leaves me unchanged. Which number am I?`);
+            }
+
+            // 8. Divisibility combined with digit sum
+            let divisor = 0;
+            if (n % 2 === 0) divisor = 2;
+            else if (n % 3 === 0) divisor = 3;
+            else if (n % 5 === 0) divisor = 5;
+            else if (n % 7 === 0) divisor = 7;
+
+            if (divisor > 0) {
+                questions.push(`I am divisible by ${divisor} and the sum of my digits is ${ds}. Which number am I?`);
+            } else {
+                questions.push(`I am not divisible by 2, 3, 5 or 7, yet the sum of my digits is ${ds}. Which number am I?`);
+            }
+
+            // 9. Middle digit + parity of that digit
+            if (len >= 3) {
+                const midPos = Math.ceil(len / 2);
+                const midDig = dig(midPos);
+                const midParity = (midDig % 2 === 0) ? 'even' : 'odd';
+                questions.push(`My middle digit (at position ${midPos}) is ${midParity} and its value is ${midDig}. I am a ${len}-digit number. Which number am I?`);
+            } else if (len === 2) {
+                const firstParity = (dig(1) % 2 === 0) ? 'even' : 'odd';
+                questions.push(`My first digit is ${firstParity}. My second digit equals ${dig(2)}. Which number am I?`);
+            } else {
+                questions.push(`I am an ${evenOdd} number between 0 and 9. Which number am I?`);
+            }
+
+            // 10. Combined multi-property logical clue
+            questions.push(`A number has ${len} digits, is ${evenOdd}, the sum of its digits is ${ds}, and the product of its digits is ${product}. Which number satisfies all these conditions at once?`);
+
+            return questions;
+        }
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        goBtn.addEventListener('click', () => {
+            const raw = answerInput.value;
+            errorMsg.style.display = 'none';
+
+            if (!isValidNumber(raw)) {
+                errorMsg.style.display = 'block';
+                questionsSection.classList.remove('visible');
+                currentQuestions = [];
+                currentAnswer = '';
+                return;
+            }
+
+            const n = parseInt(raw.trim(), 10);
+            const questions = generateQuestions(n);
+
+            // Store for clean copying
+            currentQuestions = questions;
+            currentAnswer = raw.trim();
+
+            questionsList.innerHTML = '';
+            questions.forEach(q => {
+                const li = document.createElement('li');
+                li.textContent = q;
+                questionsList.appendChild(li);
+            });
+
+            questionsSection.classList.add('visible');
+            // Scroll to questions on mobile
+            questionsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+
+        // Allow Enter key
+        answerInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                goBtn.click();
+            }
+        });
+
+        copyBtn.addEventListener('click', () => {
+            if (currentQuestions.length === 0) return;
+
+            let text = 'Maths Puzzle Creator – 10 Questions\n';
+            text += 'Answer: ' + currentAnswer + '\n\n';
+            currentQuestions.forEach((q, i) => {
+                text += (i + 1) + '. ' + q + '\n';
+            });
+
+            // Ensure no trailing extra content
+            text = text.trimEnd() + '\n';
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied all 10 questions!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('Copied all 10 questions!');
+            });
+        });
+
+        exitBtn.addEventListener('click', () => {
+            answerInput.value = '';
+            questionsList.innerHTML = '';
+            questionsSection.classList.remove('visible');
+            errorMsg.style.display = 'none';
+            currentQuestions = [];
+            currentAnswer = '';
+            answerInput.focus();
+            showToast('Cleared. Ready for a new number!');
+        });
+
+        // Focus input on load
+        answerInput.focus();
+    </script>
+</body>
+</html>
